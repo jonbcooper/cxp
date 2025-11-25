@@ -1,0 +1,1071 @@
+<!DOCTYPE HTML>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>
+   Made with Remarkable!
+  </title>
+  <link href="/usr/share/remarkable/media/highlightjs.default.min.css" rel="stylesheet"/>
+  <style type="text/css">
+   body,table tr{background-color:#fff}table tr td,table tr th{border:1px solid #ccc;text-align:left;padding:6px 13px;margin:0}pre code,table,table tr{padding:0}hr,pre code{background:0 0}body{font:16px Helvetica,Arial,sans-serif;line-height:1.4;color:#333;word-wrap:break-word;padding:10px 15px}strong,table tr th{font-weight:700}h1{font-size:2em;margin:.67em 0;text-align:center}h2{font-size:1.75em}h3{font-size:1.5em}h4{font-size:1.25em}h1,h2,h3,h4,h5,h6{font-weight:700;position:relative;margin-top:15px;margin-bottom:15px;line-height:1.1}h1,h2{border-bottom:1px solid #eee}hr{height:0;margin:15px 0;overflow:hidden;border:0;border-bottom:1px solid #ddd}a{color:#4183C4}a.absent{color:#c00}ol,ul{padding-left:15px;margin-left:5px}ol{list-style-type:lower-roman}table tr{border-top:1px solid #ccc;margin:0}table tr:nth-child(2n){background-color:#aaa}table tr td :first-child,table tr th :first-child{margin-top:0}table tr td:last-child,table tr th :last-child{margin-bottom:0}img{max-width:100%}blockquote{padding:0 15px;border-left:4px solid #ccc}code,tt{margin:0 2px;padding:0 5px;white-space:nowrap;border:1px solid #eaeaea;background-color:#f8f8f8;border-radius:3px}pre code{margin:0;white-space:pre;border:none}.highlight pre,pre{background-color:#f8f8f8;border:1px solid #ccc;font-size:13px;line-height:19px;overflow:auto;padding:6px 10px;border-radius:3px}
+  </style>
+ </head>
+ <body>
+  <h2>
+   A Beginner's Guide to Web Scripting with Lua and Fengari.
+  </h2>
+  <hr/>
+  <p>
+   Jon Cooper
+  </p>
+  <hr/>
+  <p>
+   Fengari allows lua to be used as a web-scripting language
+   <em>
+    i.e.
+   </em>
+   we can use lua instead of javascript (JS) to control the behaviour of our web pages and we have access to all of the available JS libraries.
+  </p>
+  <p>
+   To run fengari, you need to download the file
+   <em>
+    fengari_web.js
+   </em>
+   from the src folder
+   <a href="https://github.com/fengari-lua/fengari-web">
+    here
+   </a>
+   . Note that I have renamed it so that the
+   <strong>
+    hyphen
+   </strong>
+   in the original file name is replaced by an
+   <strong>
+    underscore
+   </strong>
+   to stop linux being confused, since the hyphen can be interpreted as a shell command option. It's probably best to use Chrome and in the drop-down settings menu go to
+   <em>
+    More Tools
+   </em>
+   and then
+   <em>
+    Developer Tools
+   </em>
+   where you can select the Chrome
+   <em>
+    Console
+   </em>
+   , which shows you any errors and printed output from the scripts.
+  </p>
+  <hr/>
+  <h3>
+   Example 1. Drawing and animation with the html canvas.
+  </h3>
+  <p>
+   Traditionally a job for JS
+   <em>
+    e.g.
+   </em>
+   as introduced
+   <a href="https://www.w3schools.com/html/html5_canvas.asp">
+    here
+   </a>
+   , we can achieve the same thing with lua and fengari. Looking at the JS examples in the link, we can convert these commands to lua with some swapping around of dots and colons. The example below draws concentric circles of random radius on the canvas, a new circle appearing every 100 milliseconds.
+  </p>
+  <pre><code>&lt;html&gt;&lt;head&gt;&lt;title&gt;Draw on html canvas&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div&gt;&lt;canvas id="myCanvas" width="400" height="400" style="background-color:white;"&gt;&lt;/canvas&gt;&lt;/div&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+
+local js = require "js"
+local window = js.global
+local document = window.document
+
+canvas_width=400 canvas_height=400 centre_x=canvas_width/2 centre_y=canvas_height/2
+
+shape=document:getElementById("myCanvas")
+ctx=shape:getContext("2d")
+ctx.lineWidth=2
+
+function draw_shape()
+radius=math.random(1,200)
+ctx:beginPath()
+ctx:arc(centre_x, centre_y, radius, 0, 6.3)
+ctx.strokeStyle="dodgerblue"
+ctx:stroke()
+end
+
+window:setInterval(draw_shape, 100)
+
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+  <p>
+   The output is animated but a snapshot of it looks something like this:
+  </p>
+  <hr/>
+  <p>
+   <img src="fengcanvaspic.png" width="300px"/>
+  </p>
+  <hr/>
+  <p>
+   An explanation of the lua code is given below.
+  </p>
+  <hr/>
+  <p>
+   <img src="newfenglua2anno.png" width="800px"/>
+  </p>
+  <hr/>
+  <p>
+   The numerous other drawing methods of the canvas can thus be accessed through fengari. Note that a small minority of these methods need parameters to be given as a JS array. JS arrays are of the form: [12, 3, 3] and this one could, for example, be created with fengari using the command
+   <em>
+    window:Array(12, 3, 3)
+   </em>
+   . An array containing a single text element is created in the example below.
+  </p>
+  <hr/>
+  <h3>
+   Example 2. To save text entered in a textbox to a file.
+  </h3>
+  <pre><code>&lt;html&gt;
+&lt;legend&gt;Enter some text&lt;/legend&gt; &lt;textarea&gt;&lt;/textarea&gt;
+&lt;div&gt;&lt;button id="save"&gt;Save text to file&lt;/button&gt;&lt;/div&gt;
+
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+
+local js = require "js"
+local window = js.global
+local document = window.document
+
+savebutton=document:getElementById("save")
+savebutton:addEventListener("click", function() save() end)
+
+function save()
+textArea=document:querySelector("textarea")
+print(textArea.value)
+a=document:createElement("a")
+content=window:Array(textArea.value)
+contentType=js.new(window.Object)
+contentType["type"]="text/plain"
+savefile=js.new(window.Blob,content,contentType)
+a.href=window.URL:createObjectURL(savefile)
+a.download="jim.txt"
+a:click()
+window.console:log(a)
+window.URL:revokeObjectURL(a.href)
+end
+
+&lt;/script&gt;&lt;/html&gt;
+</code></pre>
+  <p>
+   The html above generates a very simple form in which one can enter text and save it to a local file (
+   <em>
+    jim.txt
+   </em>
+   ).
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="luafeng2.png"/>
+  </p>
+  <hr/>
+  <p>
+   Here is some explanation of what the lua script does.
+  </p>
+  <hr/>
+  <p>
+   <img src="newfenglua1anno.png" width="1000px"/>
+  </p>
+  <hr/>
+  <p>
+   Note that in the line:
+  </p>
+  <pre><code>savebutton:addEventListener("click", function() save() end)
+</code></pre>
+  <p>
+   we could have said simply:
+  </p>
+  <pre><code>savebutton:addEventListener("click", save)
+</code></pre>
+  <p>
+   as in Example 1 and this would work fine, too. However by wrapping the function in a function we can add other lua commands and extra functions to the button's callback, if needed, e.g.
+  </p>
+  <pre><code>savebutton:addEventListener("click", function() save() print("Done") end)
+</code></pre>
+  <p>
+   For this reason, we will stick to this slightly longer wrapped format for the remaining examples.
+  </p>
+  <p>
+   In this example, in addition to making a JS array, we also made a JS object. JS objects are of the form:
+   <em>
+    car = {type:"Fiat", model:"500", color:"white"}
+   </em>
+   so we could make the same thing with lua and fengari using the following commands:
+  </p>
+  <pre><code>car=js.new(window.Object)
+car["type"]="Fiat"
+car["model"]="500"
+car["color"]="white"
+</code></pre>
+  <p>
+   In JS you can print the contents of an object by using the
+   <em>
+    console.log(object_name)
+   </em>
+   command. However, in lua we need to use the following syntax instead.
+  </p>
+  <pre><code>window.console:log(object_name)
+</code></pre>
+  <p>
+   For example, with the car object above, the command
+   <em>
+    window.console:log(car)
+   </em>
+   would give us the following information about it in the Chrome console.
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="console2.png"/>
+  </p>
+  <hr/>
+  <h3>
+   Example 3. To choose a file and display it in a web page.
+  </h3>
+  <p>
+   The following code makes a simple file chooser button, as shown beneath the code box:
+  </p>
+  <pre><code>&lt;html&gt;
+&lt;legend&gt;File contents&lt;/legend&gt; &lt;textarea&gt;&lt;/textarea&gt;
+&lt;div&gt;&lt;input type="file" id="file"&gt;&lt;/div&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+local js = require "js"
+local window = js.global
+local document = window.document
+
+fileChooser=document:getElementById("file")
+fileChooser:addEventListener("change", function() read() end)
+
+textArea=document:querySelector("textarea")
+
+function read()
+myFile=fileChooser.files[0]
+print(myFile.name)
+reader=js.new(window.FileReader)
+reader.onload=function() textArea.value=reader.result end
+reader:readAsText(myFile)
+window.console:log(reader)
+end
+
+&lt;/script&gt;&lt;/html&gt;
+</code></pre>
+  <p>
+   <img alt="" src="filereaderview.png"/>
+  </p>
+  <hr/>
+  <p>
+   This allows us to select a local text file and display its contents in the web page,
+   <em>
+    e.g.
+   </em>
+   in the picture below, we have chosen a random file called
+   <em>
+    miller.txt
+   </em>
+   . Of course, we may need to resize the text area by clicking and dragging in the lower right corner to display the entire file.
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="miller.png"/>
+  </p>
+  <hr/>
+  <p>
+   An explanation of the code is given below.
+  </p>
+  <hr/>
+  <p>
+   <img src="filereaderanno.png" width="800px"/>
+  </p>
+  <hr/>
+  <h3>
+   Example 4. Display an hourglass while a process is running.
+  </h3>
+  <p>
+   Often you want to have a web form with a submit button that starts a client-side process and while this is running we want to disable the form and display an hourglass to inform the user that things are happening in the background. In this example we use an animated gif (
+   <em>
+    hourglass.gif
+   </em>
+   )  which must first be downloaded from the link
+   <a href="intro_fengari.zip">
+    here
+   </a>
+   to your working directory. The lua script in the html file looks like this:
+  </p>
+  <pre><code>&lt;html&gt;&lt;legend&gt;Choose a time (s)&lt;/legend&gt;
+&lt;input type="number" min="2" max="12" value="2" step="2" id="timer"&gt;
+&lt;button id="run"&gt;Run&lt;/button&gt;&lt;div id="info" style="height:100px;"&gt;&lt;/div&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+local js=require "js"
+local window=js.global
+local document=window.document
+
+info=document:getElementById("info")
+runButton=document:getElementById("run")
+runButton:addEventListener("click", function() start() end)
+
+function start()
+runTime=document:getElementById("timer")
+runTime=1000*runTime.value
+runButton.disabled=true
+info.style.backgroundImage="URL(hourglass.gif)"
+info.style.backgroundRepeat="no-repeat"
+window:setTimeout(function() stop() end, runTime)
+end
+
+function stop()
+runButton.disabled=false
+info.style.background="none"
+end
+
+&lt;/script&gt;&lt;/html&gt;
+</code></pre>
+  <p>
+   It gives us a mini-form as follows:
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="hourglassmini1.png"/>
+  </p>
+  <hr/>
+  <p>
+   and when running it looks like this:
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="hourglassmini2.png"/>
+  </p>
+  <hr/>
+  <p>
+   Note that the run button is disabled while the background process is running. An explanation of the code is given below.
+  </p>
+  <hr/>
+  <p>
+   <img src="hourglasstut.png" width="1000px"/>
+  </p>
+  <hr/>
+  <h3>
+   Example 5. Using the interactive graph plotting tool Plotly.
+  </h3>
+  <p>
+   This example will illustrate how to draw highly interactive graphs in a web page using the plotting tool
+   <a href="https://plotly.com/">
+    Plotly
+   </a>
+   . Imagine that we want to draw a bar chart showing the number of trees of different types in a small wood. The data are as follows: oak: 6, yew: 2, beech: 8, lime: 4,
+   <em>
+    etc.
+   </em>
+   In the code below you will see in the lua comments that Plotly has fairly complex data structures
+   <em>
+    i.e.
+   </em>
+   you need to assemble the data and plotting instructions into nested objects and arrays but this can be done fairly easily with lots of short commands, some of which I have put side-by-side on the same line.
+  </p>
+  <pre><code>&lt;html&gt;
+&lt;div id="myCanvas"&gt;&lt;/div&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script src="https://cdn.plot.ly/plotly-latest.min.js"&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+local js = require "js"
+local window = js.global
+
+--Need JS data array: [{x: ['Oak', 'Yew',...], y: [6, 2,...], type: 'bar', marker: {color: 'green'}}]
+trees=window:Array("Oak","Yew","Beech","Lime","Walnut","Ash","Poplar","Birch")
+number=window:Array(6,2,8,4,1,4,0,12)
+chart=js.new(window.Object)
+chart.x=trees
+chart.y=number
+chart.type="bar"
+
+marker=js.new(window.Object)
+marker.color="green"
+chart.marker=marker
+data=window:Array(chart)
+
+--Need JS layout object: {title: '...', font: {family: 'Arial', size: 18, color: 'green'}}
+font=js.new(window.Object) font.family="Arial" font.size=18 font.color="green"
+layout=js.new(window.Object) layout.font=font layout.title="Number of trees by species"
+
+window.Plotly:newPlot("myCanvas", data, layout)
+&lt;/script&gt;&lt;html&gt;
+</code></pre>
+  <p>
+   Anyway, the result is quite nice and, as you can see below, Plotly provides little on-screen tools for zooming and panning the graph,
+   <em>
+    etc.
+   </em>
+   , which will impress the users of your web site!
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="barchly1.png"/>
+  </p>
+  <hr/>
+  <p>
+   An annotated version of the code is given below.
+  </p>
+  <hr/>
+  <p>
+   <img src="barchlycode.png" width="800px"/>
+  </p>
+  <hr/>
+  <h3>
+   Example 6. Drawing animated 3D graphics with the three.js library.
+  </h3>
+  <p>
+   Drawing 3D objects generally requires lots of code but
+   <a href="https://threejs.org/">
+    three.js
+   </a>
+   simplifies things considerably, although in the example below I still had to combine quite a few lines together to keep everything within one page. However, the commands are grouped together logically, I hope, to indicate roughly the process of rendering a scene, which in this case is a rolling wireframe sphere.
+  </p>
+  <pre><code>&lt;html&gt; &lt;button id="run"&gt;Run&lt;/button&gt; &lt;button id="stop"&gt;Stop&lt;/button&gt; &lt;div id="myCanvas"&gt;&lt;/div&gt; &lt;/html&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+local js=require "js" local window=js.global local threejs=window.THREE local document=window.document ang=0
+
+canvas=document:getElementById("myCanvas") width=window.innerWidth height=window.innerHeight ratio=width/height
+renderer=js.new(threejs.WebGLRenderer) renderer:setSize(width,height) canvas:appendChild(renderer.domElement)
+camera=js.new(threejs.PerspectiveCamera,40,ratio,1,100) camera.position.z=40
+light=js.new(threejs.PointLight) light.position:set(20,30,40)
+
+material=js.new(threejs.MeshBasicMaterial) material.color:set("green") material.wireframe=true
+material.wireframeLinewidth=2 material.opacity=.7 material.transparent=true
+geometry=js.new(threejs.SphereGeometry,10,12,12)
+mesh=js.new(threejs.Mesh, geometry, material)
+
+scene=js.new(threejs.Scene) scene:add(camera) scene:add(light) scene:add(mesh)
+
+renderer:render(scene,camera) renderer:setAnimationLoop(function() roll() end)
+
+function roll() ang=ang+0.006 rot=mesh.rotation rot.x=ang rot.y=ang rot.z=ang renderer:render(scene, camera) end
+function run() renderer:setAnimationLoop(function() roll() end) end
+function stop() renderer:setAnimationLoop() end
+
+runbutton=document:getElementById("run") runbutton:addEventListener("click", function() run() end)
+stopbutton=document:getElementById("stop") stopbutton:addEventListener("click", function() stop() end)
+&lt;/script&gt;
+</code></pre>
+  <p>
+   The actual animation looks something like this which may not be very impressive as a still image, but it is quite hypnotic when animated. There are two html buttons (not shown) which are coded to turn the animation on or off.
+  </p>
+  <hr/>
+  <p>
+   <img src="rollingball.png" width="300px"/>
+  </p>
+  <hr/>
+  <p>
+   The rendering process (
+   <em>
+    i.e.
+   </em>
+   drawing, painting or photographing the scene computationally) consists of defining a
+   <em>
+    camera
+   </em>
+   and a
+   <em>
+    light source
+   </em>
+   in a 3D coordinate system, as shown
+   <a href="https://discoverthreejs.com/images/first-steps/coordinate_system.svg">
+    here
+   </a>
+   . We must also specify the
+   <em>
+    material
+   </em>
+   of the object being 'photographed' and its
+   <em>
+    geometry
+   </em>
+   - roughly speaking its shape. The program calculates a
+   <em>
+    mesh
+   </em>
+   which is like a polygon model of the object's surface, based on its geometry and the chosen material. In the language of three.js, we create a
+   <em>
+    scene
+   </em>
+   and add the
+   <em>
+    camera,
+   </em>
+   <em>
+    light
+   </em>
+   and
+   <em>
+    mesh
+   </em>
+   to it before issuing a final command to
+   <em>
+    render
+   </em>
+   the
+   <em>
+    scene
+   </em>
+   . Of course it is insanely complicated and I can only pretend to understand it, but I have annotated the main steps below.
+  </p>
+  <hr/>
+  <p>
+   <img src="rollingballcode.png" width="1000px"/>
+  </p>
+  <hr/>
+  <p>
+   <strong>
+    Depth cueing
+   </strong>
+   . One more thing about this example is that the 3D effect can be enhanced significantly by adding a fog to the scene. This is done by inserting the following line in the script just below the scene command.
+  </p>
+  <pre><code>scene.fog=js.new(threejs.Fog,"black", camera.position.z-15, camera.position.z+15)
+</code></pre>
+  <p>
+   In this case the fog starts at 15 distance units before the origin of the sphere (which has a radius of 10 units) and reaches full thickness 15 distance units behind.
+  </p>
+  <hr/>
+  <h3>
+   Example 7. Handling JS promises in file transfers.
+  </h3>
+  <p>
+   In this example we will use
+   <a href="https://webhook.site">
+    webhook
+   </a>
+   which is a website specifically for testing post and get transfers. We can easily set up a temporary URL and any data we send to it will appear in the corresponding web page. The example code below contains the temporary URL that I set up for this tutorial so you will need to set up your own and transfer data to that instead by altering the http address in the script accordingly. Keep the webhook URL open in one browser tab and load the script in another.
+   <strong>
+    N.B.
+   </strong>
+   With some browsers (
+   <em>
+    e.g.
+   </em>
+   Chrome) this example only works properly if you tick the "CORS Headers" box, as shown highlighted in the screenshot of the webhook site a few paragraphs down.
+  </p>
+  <p>
+   The purpose of this example is to demonstrate that some JS processes are allowed to be asynchronous,
+   <em>
+    i.e.
+   </em>
+   they start and run at their own speed, independently of the rest of the code. The reason for this is that some processes, such as transferring data to or from a web server, take a finite amount of time to complete, so there is not much point holding up the rest of the script while this is happening. However, if the script needs to process data after it has been received then it must, of course, wait for the transfer to complete. JS allows for this with 'promises'
+   <em>
+    e.g.
+   </em>
+   the JS
+   <em>
+    fetch
+   </em>
+   method which we use in the below example to post data to an external server returns a promise which, assuming no errors occur, will either be 'pending' during the transfer or 'fulfilled' once the transfer is complete. JS promises have a
+   <em>
+    then
+   </em>
+   method which is executed when the promise is fulfilled and, as shown below, we can attach a lua function to this which will run only when the transfer is complete.
+  </p>
+  <pre><code>&lt;html&gt;&lt;head&gt;&lt;title&gt;Javascript promises&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div id="info1"&gt;&lt;/div&gt;&lt;div id="info2"&gt;&lt;/div&gt;&lt;div id="info3"&gt;&lt;/div&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+
+local js=require "js"
+local window=js.global
+local document=window.document
+
+fetchObject=js.new(window.FormData)
+fetchObject.method="POST"
+fetchObject.body="The MILLERE was a stout carl for the nones; Ful byg he was of brawn and eek of bones- That proved wel, for over al ther he cam At wrastlynge he wolde have alwey the ram. He was short-sholdred, brood, a thikke knarre, Ther was no dore that he nolde heve of harre, Or breke it at a rennyng with his heed. The Canterbury Tales by Geoffrey Chaucer."
+
+--Send data to a remote server using JS fetch which is asynchronous. It returns a 'fulfilled promise' when finished.
+fetchpromise=window:fetch("https://webhook.site/d0141503-e6da-4b3a-8720-af5906e4af3e",fetchObject) -- copy and paste the URL from webhook
+fetchpromise["then"](fetchpromise, function() post_completed() end) --override lua's own then command
+
+function post_completed() --This function only runs when the promise is 'resolved' i.e. the data is sent.
+document:getElementById("info2").innerHTML="I waited for the post request to finish.&lt;p&gt;"
+document:getElementById("info3").innerHTML="To check it worked visit: https://webhook.site"
+end
+
+--This last part of the code finishes before the post request finishes, even though it is started afterwards!
+document:getElementById("info1").innerHTML="The first shall be last and the last shall be first (Matthew 20:16).&lt;p&gt;"
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+  <p>
+   One issue with the JS promise
+   <em>
+    then()
+   </em>
+   method is that in lua the word "then" has its own meaning in the familiar "if then" statement for logical tests. However, lua's syntax can be overridden locally as shown in the line beginning
+   <em>
+    fetchpromise["then"]...
+   </em>
+   to provide a "then" method, which in this case is the lua function
+   <em>
+    post_completed()
+   </em>
+   . Some more notes on the code are provided below.
+  </p>
+  <hr/>
+  <p>
+   <img src="newfetchpromise.png" width="1000px"/>
+  </p>
+  <hr/>
+  <p>
+   In a web browser the script loads as follows and if you copy and paste the web address which is underlined in blue below or simply switch to the webhook tab you can check that the full text has been posted to the remote server.
+  </p>
+  <hr/>
+  <p>
+   <img src="examp71.png" width="500px"/>
+  </p>
+  <hr/>
+  <p>
+   Keep clicking the browser refresh button, as in the above picture, and you will see new transfers in the webhook tab as they arrive.
+  </p>
+  <hr/>
+  <p>
+   <img src="examp75.png" width="1000px"/>
+  </p>
+  <hr/>
+  <p>
+   You can see the text we sent in the "Raw Content" box. Note the "CORS Headers" checkbox which needs to be clicked with Chrome.
+  </p>
+  <hr/>
+  <h3>
+   Example 8. Chaining server requests.
+  </h3>
+  <p>
+   In the previous example we used the fetch method to post data to a remote server. In this example we will do the same but we will also get the response from the server and display it in an inline frame, or iframe. Iframes are very useful for displaying data from a server in the current webpage, otherwise the response would automatically appear in a new browser tab. Anyway, firstly we need to visit
+   <a href="https://webhook.site">
+    webhook
+   </a>
+   and set up temporary URL as before. However, this time we also need to set a server response which can be done by clicking the Edit button, shown by a red arrow in the figure below, and entering some text for the "Response body".
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="examp8b.png"/>
+  </p>
+  <hr/>
+  <p>
+   We also need to copy and paste the temporary URL into the script, as shown below.
+  </p>
+  <pre><code>&lt;html&gt;&lt;head&gt;&lt;title&gt;Chaining server requests&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
+&lt;legend&gt;Reply from server:&lt;/legend&gt;
+&lt;iframe id="info1" name="info1"&gt;&lt;/iframe&gt; &lt;!--This is an html comment. Note iframe needs name AND id equal. --&gt;
+&lt;div id="info2"&gt;&lt;/div&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+
+local js=require "js" local window=js.global local document=window.document
+
+fetchObject=js.new(window.FormData)
+fetchObject.method="POST"
+fetchObject.body="The MILLERE was a stout carl for the nones; Ful byg he was of brawn and eek of bones- That proved wel, for over al ther he cam At wrastlynge he wolde have alwey the ram. He was short-sholdred, brood, a thikke knarre, Ther was no dore that he nolde heve of harre, Or breke it at a rennyng with his heed. The Canterbury Tales by Geoffrey Chaucer."
+serverURL="https://webhook.site/6e3bbc0d-c108-4e37-bb72-e44caf972b86" -- copy and paste the URL from webhook
+fetchpromise=window:fetch(serverURL,fetchObject)
+fetchpromise["then"](fetchpromise, function() post_completed() end) --override lua's own then command
+
+function post_completed()
+myDownload=document:getElementById("info1")
+myDownload.src=serverURL
+myDownload.onload=function() get_completed() end
+end
+
+function get_completed()
+document:getElementById("info2").innerHTML="To see the POST and GET requests visit: https://webhook.site"
+end
+
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+  <p>
+   After the data are sent to the server using the fetch promise, a function is called to get the server reply using the iframe's
+   <em>
+    src
+   </em>
+   (source) method. Then when the iframe is fully loaded, its
+   <em>
+    onload
+   </em>
+   method is used to call the final function in the script. An explanation of these steps is given below.
+  </p>
+  <hr/>
+  <p>
+   <img src="chaining.png" width="1000px"/>
+  </p>
+  <hr/>
+  <p>
+   You should be able to confirm that everything appears in the web page in the right time sequence. The legend and the empty iframe appear first, then the server message eventually arrives in the iframe followed almost instantly by the final message at the bottom of the page.
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="examp8a2.png"/>
+  </p>
+  <hr/>
+  <p>
+   If you look at the webhook site which you created for this exercise, you should be able to see the
+   <span style="background-color:cyan;">
+    POST
+   </span>
+   and
+   <span style="background-color:palegreen;">
+    GET
+   </span>
+   requests appearing on the on the left hand side of the page, as shown in the first screenshot in this section.
+  </p>
+  <p>
+   In this example the server has just sent a plain text message, but the normal situation would be for the server to send some html that would be displayed in the iframe. It is also possible for the server to send back a file and this could then be downloaded to the local disk by the client browser script,
+   <em>
+    e.g.
+   </em>
+   by using a truncated version of the
+   <em>
+    save()
+   </em>
+   method of Example 2. In this case there is no need to make a blob object,
+   <em>
+    etc,
+   </em>
+   since
+   <em>
+    a.href
+   </em>
+   can simply be set to the relative path and name of the desired file on the remote server (relative, that is, to the server script).
+  </p>
+  <p>
+   In the last two example scripts, if you were to delete all of the chaining commands, these small test cases would probably still work perfectly well. However, remember that we are transferring just a few lines of text but when large amounts of data (
+   <em>
+    e.g.
+   </em>
+   megabytes) are being transferred, the use of "then" and "onload" methods is crucial to ensure everything proceeds in a synchronized way. I hope the last two examples give an idea of how asynchronous processes can be handled in a fengari web script.
+  </p>
+  <hr/>
+  <h3>
+   Example 9. Adding a progress bar.
+  </h3>
+  <p>
+   If your script is a time-consuming one then it will help to inform the user that the calculation is progressing, more so than an hourglass might do on its own. This is an example of a way to code a progress bar which was sent to me by Daurnimator (the author of Fengari) which uses a co-routine - something I am not very familar with, but it does the job!! It does not seem to be possible to do this with the JS commands we have used up till now.
+  </p>
+  <pre><code>&lt;html&gt;&lt;head&gt;&lt;title&gt;Progress Bar&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div&gt;&lt;button id="run"&gt;Run&lt;/button&gt;&lt;/div&gt;
+&lt;progress value="0" max="100" id="progress" style="width:100px;"&gt;&lt;/progress&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+
+local js = require "js"
+local window = js.global
+local document = window.document
+
+submit=document:getElementById("run")
+progbar=document:getElementById("progress")
+
+function dom_yield()
+    co = coroutine.running()
+    window:setTimeout(function() coroutine.resume(co) end)
+    return coroutine.yield()
+end
+
+submit:addEventListener("click",  function() coroutine.wrap(function()
+    for i=1,10^7 do
+    if i%10^6==0 then
+        local prog=math.floor(i/10^7*100)
+        progbar.value=tostring(prog)
+        dom_yield()
+    end
+    end
+end)()
+end)
+
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+  <p>
+   Basically we have wrapped the time-consuming calculation (block at the end) in a co-routine and, at regular intervals, it is the co-routine dom_yield() (middle block) which updates the web page with the JS
+   <i>
+    setTimeout()
+   </i>
+   function.
+  </p>
+  <hr/>
+  <p>
+   <img src="examp9.png"/>
+  </p>
+  <hr/>
+  <h3>
+   Example 10. Calculating run time.
+  </h3>
+  <p>
+   During testing, it may be useful to calculate how long your script takes to run e.g. you can see how much faster it is to use local variables rather than globals, which is actually my preference for simplicity! To do this we can use the JS
+   <i>
+    Date()
+   </i>
+   function which returns a string such as "Tue Apr 02 2024 01:45:47 GMT+0100 (British Summer Time)" and from this we can use lua to extract the time in seconds at the start and end of the run.
+  </p>
+  <pre><code>&lt;html&gt;&lt;head&gt;&lt;title&gt;Run time calculator&lt;/title&gt;&lt;/head&gt;&lt;body&gt;
+&lt;div&gt;&lt;button id="run"&gt;Run&lt;/button&gt;&lt;/div&gt;
+&lt;div id="runtime"&gt;&lt;/div&gt;
+&lt;script src='fengari_web.js' type="text/javascript" async&gt;&lt;/script&gt;
+&lt;script type="application/lua" async&gt;
+
+local js = require "js"
+local window = js.global
+local document = window.document
+
+function getTime()
+timenow=window:Date()
+hours=tonumber(timenow:sub(17,18))
+mins=tonumber(timenow:sub(20,21))
+secs=tonumber(timenow:sub(23,24))
+time=hours*60*60+mins*60+secs
+return(time)
+end
+
+document:getElementById("run"):addEventListener("click",
+   function()
+   startTime=getTime()
+   for i=1,10^7 do j=i end  --slow step
+   endTime=getTime()
+   runTime=endTime-startTime
+   document:getElementById("runtime").innerHTML="&lt;p&gt;Run time: "..runTime.." sec."
+   end)
+
+&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+  <p>
+   The lua
+   <i>
+    getTime()
+   </i>
+   function calculates the current time in seconds at the start and end of the run button's callback (bottom block) and the difference between these two numbers gives us the total run time.
+  </p>
+  <hr/>
+  <p>
+   <img src="examp10.png"/>
+  </p>
+  <hr/>
+  <p>
+   Note that this only gives you the time in seconds which is fine for slow scripts but to achieve greater precision you would need to make
+   <i>
+    new Date()
+   </i>
+   JS objects, as follows, at each point of interest in the program. This will give the current time in milliseconds (measured since 1 Jan 1970).
+  </p>
+  <pre><code>timenow=js.new(window.Date)
+print("Time now:",timenow:getTime())
+</code></pre>
+  <p>
+   Subtracting the value for the startpoint from that of the endpoint, as before, will give the runtime in ms. Again, Daurnimator very kindly provided the information for this example.
+  </p>
+  <hr/>
+  <h3>
+   Example 11. Pixi.js and dat.GUI
+  </h3>
+  <p>
+   In this example we will use the 2D graphics rendering library pixi.js which can be used for games, etc, and the gui library dat.GUI for controlling a simple animation. We render a picture file and display text on top of it, firstly by using html and secondly by using pixi to write the text onto the canvas for us.
+  </p>
+  <p>
+   <img alt="" src="millerexample.jpg"/>
+  </p>
+  <p>
+   Pixi does things at the same time as fengari so we need to use promises to make sure that one waits for the other. In this
+example, the
+   <em>
+    init_promise
+   </em>
+   is where we have to wait for pixi to create the canvas before adding it to the web page that the browser is drawing. A bit further down is a second promise
+   <em>
+    asset_promise
+   </em>
+   where we have to wait for pixi to load the asset (a picture file) before it tries to draw it as a moving image or 'sprite'. In this case we call it a tilingSprite so that pixi repeats it like a wallpaper pattern. The sprite is then drawn on the pixi 'stage' and a 'ticker' function is started to roll it continuously in the y-direction, a bit like the credits at the end of a film.
+  </p>
+  <p>
+   We also make a simple dat GUI with a slider to control the animation speed and a button to reset the speed to its original value. There are callback functions which do this for us and another callback function is triggered by clicking on the pixi sprite which reverse the animation.
+  </p>
+  <hr/>
+  <pre><code>&lt;html&gt;&lt;title&gt;Getting Started with PIXI&lt;/title&gt;
+&lt;script src="https://pixijs.download/release/pixi.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"&gt;&lt;/script&gt;
+&lt;script src="fengari_web.js" type="text/javascript" async&gt;&lt;/script&gt;
+
+&lt;div style="position:absolute; color:white; padding: 20px; text-shadow: 0px 0px 2px black;"&gt;
+&lt;h2&gt;The Millers Tale&lt;/h2&gt;
+&lt;h3&gt;&lt;i&gt;Geoffrey Chaucer&lt;/i&gt;&lt;/h3&gt;
+&lt;div id="myGui" style="opacity:0.7; transform:scale(0.8);"&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script type="application/lua"&gt; --Put script at end, i.e. just before &lt;/html&gt; so page loads fully before script starts.
+
+local js=require('js')  local window=js.global  local document=window.document
+
+app=js.new(window.PIXI.Application)
+
+gui=js.new(window.dat.GUI)
+document:getElementById('myGui'):appendChild(gui.domElement)
+
+background=js.new(window.Object)
+background.backgroundAlpha=0
+background.width=570
+background.height=200 --image is 570 x 1101 pixels so we are just showing part of it
+
+init_promise=app:init(background)
+init_promise["then"](init_promise, function() document.body:appendChild(app.canvas) end)  --override lua's own then command
+
+
+slider=js.new(window.Object)
+slider.speed=1
+gui:add(slider,"speed",-20,20):name("Rolling speed"):onFinishChange(function() print(slider.speed) end):listen()
+
+button=js.new(window.Object)
+button.reset=function() slider.speed=1 print(slider.speed) end
+gui:add(button,"reset"):name("&lt;center style=\"background-color:green;\"&gt;Reset rolling speed&lt;/center&gt;")
+
+
+asset_promise=window.PIXI.Assets:load('millere.jpg')
+asset_promise["then"](asset_promise, function() sprite=window.PIXI.TilingSprite:from('millere.jpg')
+                                     sprite.eventMode="static"
+                                     sprite:on("click", function() slider.speed=-slider.speed end)
+                                     app.stage:addChild(sprite)
+                                     sprite.tilePosition.y=-200
+                                     roll()
+                                     end )
+
+function roll() app.ticker:add(function() sprite.tilePosition.y=sprite.tilePosition.y-0.1*slider.speed end) end
+
+pixitext=js.new(window.PIXI.Text)
+pixitext.text="Background image by deepai.org"
+pixitext.position.x=370
+pixitext.position.y=174
+pixitext.zIndex=2
+
+pixitext.style.fontSize=12
+pixitext.style.fill="white"
+pixitext.style.fontWeight="bolder"
+
+app.stage:addChild(pixitext)
+
+&lt;/script&gt;&lt;/html&gt;
+</code></pre>
+  <hr/>
+  <p>
+   <strong>
+    Important note.
+   </strong>
+   In order for the script to load a local file, e.g. the picture file that we are going to animate, you will need to have a local web server running. This is because the web page is asking the browser to load a specific local file without giving the user the opportunity to select which file to use, and that is a security risk. When the html file is on a server, there is no security risk in it reading another file on the same server. Hence we need to make a local
+   <i>
+    fake
+   </i>
+   server on our own computer. On linux this is quite easy because we can use
+   <em>
+    busybox
+   </em>
+   which may be installed already, but if not you can get it with your package manager. In a terminal window in the folder where the
+   <em>
+    example11.html
+   </em>
+   file is, type:
+  </p>
+  <pre><code>busybox httpd -f -vv -p 2020
+</code></pre>
+  <p>
+   and make your browser look at the following URL:
+  </p>
+  <pre><code>http://localhost:2020/example11.html
+</code></pre>
+  <p>
+   Everything should now work perfectly. There are some tutorials on the web about doing the same thing on Windows, etc. I tried and found the following works if you download a windows binary for busybox to your folder:
+  </p>
+  <pre><code>busybox httpd -fvv
+</code></pre>
+  <p>
+   Then the following should work:
+  </p>
+  <pre><code>http://localhost/example11.html
+</code></pre>
+  <p>
+   Here, the file is being delivered on port 80 (whatever that means) by default. In the previous example, we used port 2020, but if we choose our own port number, it can be pretty much any integer &gt;= 1024,
+   <i>
+    e.g.
+   </i>
+   8080 is commonly used for ease of typing, I think.
+  </p>
+  <p>
+   The text is a bit small in the figure below, but I hope it explains what is going on.
+  </p>
+  <hr/>
+  <p>
+   <img alt="" src="pixidatgui.png"/>
+  </p>
+  <hr/>
+  <p>
+   One final point is that if the script needs to wait for the page to load before it starts running (as in this example), in theory, it should be possible to do this by using the "defer" attribute instead of "async", but this never seems to work properly, for me anyway! The only way which seems to work is to put the script below all of the html, etc, as in this example.
+  </p>
+  <hr/>
+  <h4>
+   Footnote.
+  </h4>
+  <p>
+   The files used in the examples above can be obtained as a zip file
+   <a href="intro_fengari.zip">
+    here
+   </a>
+   .
+  </p>
+  <p>
+   This is very much a guide for beginners by a beginner so it will be nowhere near perfect.
+  </p>
+  <p>
+   Please do let me know of any typos, errors and omissions, via jbcooper_at_fastmail_dot_net.
+  </p>
+  <p>
+   Things which I still do not really understand (sorry) and should be looked at in future are:
+  </p>
+  <ul>
+   <li>
+    The JS API, push, test, proxy,
+    <em>
+     etc.
+    </em>
+   </li>
+   <li>
+    Using Webpack.
+   </li>
+   <li>
+    Lots more...
+   </li>
+  </ul>
+  <hr/>
+  <h4>
+   Acknowledgements.
+  </h4>
+  <p>
+   Daurnimator (the author of Fengari) for much help on numerous occasions.
+  </p>
+  <p>
+   I am also very grateful to
+   <a href="http://akkartik.name/">
+    Kartik Agaram
+   </a>
+   for pointing out an improvement which can be applied to all the examples here, but for simplicity and to save face (!), I have only described it in Examples 1 and 2.
+  </p>
+  <p>
+   I am grateful to nadmaximus on the lua reddit forum for posting lots of excellent advice and examples on pixi.js which features in Example 11 and is something that I would probably have never looked at otherwise.
+  </p>
+  <script src="/usr/share/remarkable/media/highlight.min.js">
+  </script>
+  <script>
+   hljs.initHighlightingOnLoad();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript">
+  </script>
+  <script type="text/javascript">
+   MathJax.Hub.Config({"showProcessingMessages" : false,"messageStyle" : "none","tex2jax": { inlineMath: [ [ "$", "$" ] ] }});
+  </script>
+ </body>
+</html>

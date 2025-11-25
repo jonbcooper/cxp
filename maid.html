@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=windows-1252">
+    <link rel="stylesheet" type="text/css" href="maid.css" title="maid
+      stylesheet">
+    <title>MAID - an automated electron density map fitting routine by
+      David Levitt (University of Minnesota).</title>
+  </head>
+  <body style="color: rgb(0, 0, 0); background-color: rgb(153, 255,
+    255);" link="#0000ee" vlink="#551a8b" alink="#ee0000">
+    <h1 style="font-family: Calibri;"><u>MAID: an automated map-fitting
+        routine</u>. <small><small>Copyright David G. Levitt, 2000. <br>
+        </small></small></h1>
+    <div align="justify"><big><big><font face="Helvetica, Arial,
+            sans-serif"><b>MA</b><b>ID</b> by David Levitt at the
+            University of Minnesota uses torsion angle molecular
+            dynamics for automated building of the amino acid sequence
+            of a protein into an electron density map and is described
+            in: </font></big></big><br>
+    </div>
+    <br>
+    <font face="Helvetica, Arial, sans-serif"><big><big><a
+            href="http://journals.iucr.org/d/issues/2001/07/00/gr2144/index.html">"A
+            new software routine that automates the fitting of protein
+            X-ray crystallographic electron density maps." D. G. Levitt.
+            (2001). <i>Acta Crystallogr</i>. <b>D57</b>, 1013-1019.</a>&nbsp;
+          <br>
+        </big></big></font><br>
+    <big><big><font face="Helvetica, Arial, sans-serif">Since David's
+          research now focusses on pharmacokinetics, with David's
+          permission MAID can be obtained below. <big><br>
+          </big><br>
+          <b><small>IMPORTANT POINTS:<ul>
+<li>MAID runs best on a 64 bit computer and, although you can run it on a 32 bit machine, it tends to stop prematurely and may not complete all three stages of the model-building process, namely "trace", "extend" and "expand". Therefore it is recommended that you run it on a 64 bit machine with a 64 bit operating system, although you may still get a useful starting model of the structure if you do run it on a 32 bit system. Anyhow, I am confident that the 64 bit version on a 64 bit machine will work as well as MAID used to on an SGI, a long time ago and its a lot quicker!</li><br>
+<li>There is a simple GUI for running MAID in batch- or background-mode without having to read the manual and this is called MAIDaid. <u>If you run the MAIDaid GUI, you can now ignore the rest of this
+                paragraph</u>. MAID itself requires the electron density
+              map to be in X-PLOR/CNS ASCII format and it should be
+              normalised, i.e. the mean density should be zero and the
+              RMS density should be 1.0. Maps not already in this format
+              can be converted using MAPMAN (in the Uppsala suite) or
+              re-calculated using the PHENIX gui as follows: in the
+              PHENIX 'Maps' tab, use the 'FFT map coefficients' option
+              and set 'Map scaling' to 'sigma' and 'Format' to 'XPLOR'.
+              <u>However, this normalisation is now done automatically
+                by MAIDaid, whenever needed. MAIDaid will also read
+                CCP4 maps, convert them to X-PLOR format and normalise
+                them, as required</u>.</li>
+              <br>
+              <li>By default, PHENIX produces a map covering the unit cell
+              and CCP4 produces a map which covers just the asymmetric
+              unit. This may or may not give MAID some problems! It may
+              be better to build a dummy water molecule roughly in the
+              middle of the protein density and save it as PDB file.
+              Subsequently using PHENIX or CCP4 to calculate the map
+              around this water molecule with say a 35 - 40 Angstrom
+              border may give better results. </li></ul>
+            </small></b> 
+          <b>Linux</b></font></big></big><br>
+    <br>
+    <big><font face="Helvetica, Arial, sans-serif"><b>Original linux
+          version</b><br>
+        This version of MAID can be compiled using most UNIX and Linux
+        compilers. Follow the compiler directions in the MANUAL to
+        choose your compiler. (Special thanks to Ralf Grosse-Kunstleve
+        (nwgk@cci.lbl.gov) for allowing me (DGL) to use the "compiler
+        farm".) <br>
+        <br>
+        Click on the underlined file - and direct it to the directory
+        you want: <br>
+        Download MAID code, manual and makefile (tar and zipped) by
+        clicking on: <a href="maid_unix_12nov01.tar.gz">maid_unix_12nov01.tar.gz</a><br>
+        &nbsp;&nbsp;&nbsp;&nbsp; In the directory where the&nbsp;
+        .tar.gz file is located:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; Unzip the file: gunzip filename.tar.gz<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; untar the file: tar xvf file.tar<br>
+        This will create a new subdirectory glmaid_unix&nbsp; containing
+        all the files you need to compile MAID.<br>
+        Read either MANUAL5_word.doc or MANUAL5_word.txt for
+        instructions for compiling and running MAID.<br>
+        <br>
+        <b>Newer linux version</b><br>
+        A newer linux version which includes the maidaid GUI for starting
+        the batch version of MAID can be obtained here:<br><br>
+<a href="linux_maid64.tar.gz">64 bit</a> or here <a href="linux_maid.tar.gz">32 bit</a> (Sep 2015). <br><br>
+Note that the only difference between these two files is that maid and maidaid have been compiled on 64 and 32 bit linux. If it turns out that you need to compile everything from source, either will be fine because the programs themselves are identical in each. Remember that MAID will nearly always work better on a 64 bit system. <br><br> 
+
+To run the program, unzip the files with your linux file manager or as described above, then 
+go to the linux_maid folder and double-click on the maidaid file icon or
+        use a terminal window to enter the following command in the
+        linux_maid folder: <i>./maidaid</i><br>
+        <br>
+        In case of problems, first ensure that both maidbatch and
+        maidaid are executable i.e. type: <i>chmod u+x maidbatch maidaid</i><br>
+	<br>
+If maidbatch does not work, you can compile it from source by opening a terminal window in
+the folder where the program files are and typing "<i>make</i>" noting that you will, of course, need to have 'make' and g++ installed first. It is also fairly easy to compile maidaid by installing the latest FLTK library from the website (www.fltk.org) in the usual unix way (i.e. "<i>./configure</i>", "<i>make</i>", "<i>sudo make install</i>"). It seems to work better if you install FLTK from source in this way rather than getting it via your linux package manager. In the maid folder, open a terminal window and type: "<i>fltk-config --compile maidaid.cxx</i>" to compile maidaid itself. Finally, if the maidaid font size turns out to be too small, installing the X freetype font library (libxft-dev) with your package manager and repeating the FLTK build will help.
+<br><br>
+	Note that this linux version is based on the tweaked one I made
+        for Windows, so please read the paragraphs below since they give
+        the general idea of what to do.&nbsp; <br>
+      </font></big><br>
+    <b><big><big><font face="Helvetica, Arial, sans-serif">Windows</font></big></big></b><b>
+    </b><br>
+    <br>
+    <big><font face="Helvetica, Arial, sans-serif">David's original code
+        for the batch version of MAID has been tweaked by myself (J.
+        Cooper) so that it can be compiled by MinGW and run on Windows.
+        There is also a basic GUI, which I have called MAIDaid, for
+        launching MAID without having to read the manual, although there
+        is an on-screen help button, if needed. The Windows version can
+        be obtained as a zip file here: <br>
+        <br>
+	<a href="maid64.zip">64 bit</a> or here <a href="maid.zip">32 bit</a> (Sep 2015). <br><br>
+        The files are within a folder called 'maid' which contains the
+        original program manual (MANUAL5_WORD.txt and .doc). The easiest
+        option should be to run MAID using the MAIDaid GUI which you can
+        start by just double-clicking MAIDaid.exe. You can even make a
+        neat short-cut to this program on the Windows desktop! However,
+        please remember that the MAIDaid.exe file must be in the same
+        folder as maidbatch.exe, which is the batch version of the MAID
+        program. In the unlikely event that MAIDaid starts OK but stops when you click on
+        'Prepare files', right-click on the executable and select
+        'Troubleshoot compatibility' to sort it out. Note, the 'screen'
+        i.e. interactive version of MAID hasn't (yet) been compiled for
+        Windows (or Linux). <br>
+        <br>
+        A folder (test_maps) with a few sample maps in the right format
+        and the corresponding amino acid sequences is provided for
+        testing purposes.<br>
+        <br>
+        If necessary, maidbatch can be compiled using g++ in MinGW or MinGW-w64 (as appropriate) and MSYS which provides a
+        Windows 'make' program (note that GNU make.exe and the 'makefile' are
+        provided). MAIDaid can be compiled with MinGW or MinGW-w64 (as appropriate) using MSYS, firstly to install FLTK and then to run the
+        compile_MAIDaid.bat file. </font></big><br>
+    <br>
+    <font face="Helvetica, Arial, sans-serif"><big><big><b>Mac </b><br>
+          <br>
+        </big>I</big><big>'m afraid all the people with MACs round here
+        have left, so I haven't been able to prepare anything, but it
+        shouldn't be too hard to compile the program using the source
+        code for the Linux version. </big><br><br>
+    <font face="Helvetica, Arial, sans-serif"><big><big><b>Compatibility </b><br>
+          <br>
+        </big></big><big>Note that for some reason Coot may not manage to read in PDB files produced by MAID so you may need to renumber all of the residues with a PDB file utility, such as PDBSET, and insert the right the CRYST and SCALE cards. Just type the following in a command shell:<br><br>
+<i>pdbset xyzin input.pdb xyzout output.pdb <return><br>
+cell 55 66 77 90 90 90 <return><br>
+spac P212121 <return><br>
+renum 1<return><br>
+end<return></i><br><br>with appropriate filenames and values for your crystal symmetry. The residue numbering, etc, can be corrected in Coot later.
+	<br><br>
+        <font color="teal">As of Aug 2015 I have been able to iron-out a couple of annoying bugs in maidaid so it is a lot more stable on Windows and linux but please let me know how it goes.<br>
+<br>jon.cooper@ucl.ac.uk</font><br>
+      </big></font>
+  </body>
+</html>
